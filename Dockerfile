@@ -24,7 +24,7 @@ RUN mkdir -p /app/reports /data
 ENV OPENOSINT_HOME=/data
 VOLUME /data
 
-EXPOSE 8080
+EXPOSE 18895
 
 # --allow-remote is required for a non-loopback bind (GHSA-cqr4-hcfp-m6m4) —
 # safe here because the container network boundary is what's actually
@@ -34,4 +34,4 @@ EXPOSE 8080
 # such a file exists, so the "Loaded .env" line only appears once there really is one.
 # Saving keys from the browser needs OPENOSINT_SETUP_TOKEN here: the browser reaches
 # the container over the Docker bridge, not loopback.
-CMD ["sh", "-c", "ln -sf /data/.env /app/.env && exec openosint web --host 0.0.0.0 --port 8080 --no-browser --allow-remote"]
+CMD ["sh", "-c", "ln -sf /data/.env /app/.env && exec openosint web --host 0.0.0.0 --port 18895 --no-browser --allow-remote"]
