@@ -6,6 +6,7 @@ services:
   openosint:
     image: local/osint-openosint:portainer
     restart: unless-stopped
+    command: ["sh", "-c", "ln -sf /data/.env /app/.env && exec openosint web --host 0.0.0.0 --port 18895 --no-browser --allow-remote"]
     security_opt:
       - no-new-privileges:true
     environment:
@@ -23,7 +24,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - "${LAN_IP:?ENTER_LAN_IP}:${OPENOSINT_HOST_PORT:-29002}:80/tcp"
+      - "${LAN_IP:?ENTER_LAN_IP}:${OPENOSINT_HOST_PORT:-18895}:18895/tcp"
     environment:
       AUTH_USER: "${OSINT_AUTH_USER:?ENTER_USERNAME}"
       AUTH_PASSWORD: "${OSINT_AUTH_PASSWORD:?ENTER_PASSWORD_IN_PORTAINER}"
@@ -31,7 +32,7 @@ services:
     command:
       - |
         HASH=$$(caddy hash-password --algorithm bcrypt --plaintext "$$AUTH_PASSWORD")
-        printf '%s\n' ':80 {' '  basic_auth {' "    $$AUTH_USER $$HASH" '  }' '  reverse_proxy openosint:8080' '}' > /etc/caddy/Caddyfile
+        printf '%s\n' ':18895 {' '  basic_auth {' "    $$AUTH_USER $$HASH" '  }' '  reverse_proxy openosint:18895' '}' > /etc/caddy/Caddyfile
         caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
         exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
 volumes:
