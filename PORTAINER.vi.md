@@ -35,6 +35,20 @@ Sao chép chuỗi bcrypt (`$2a$` hoặc `$2b$`) để nhập vào Portainer. **O
 
 **Có bước build image từ fork:** Repo dùng `build:` (context thư mục gốc). Portainer ở remote endpoint có thể **không hỗ trợ** build theo Compose. Nếu thất bại, không tự thay đổi service cũ; cần build image trên đúng VM/LXC bằng lệnh Docker Compose hoặc cấu hình Portainer local Docker endpoint, rồi Deploy lại. Hãy xem Logs trước khi xử lý. Dùng Dockerfile hiện có của fork; đã tích hợp holehe/sherlock, nhưng PhoneInfoga binary không được cài trong Dockerfile gốc.
 
+
+### Phương án B khi Portainer Agent/remote không build được
+
+1. SSH vào **VM/LXC Docker đích**, không phải Proxmox host; chạy sau khi bạn xác nhận muốn build image:
+
+```bash
+git clone --branch portainer-lan https://github.com/hoangthang0106/OpenOSINT.git
+cd OpenOSINT
+docker build -f Dockerfile -t local/osint-openosint:portainer .
+```
+
+2. Trong Portainer chọn Git repo và đổi duy nhất **Compose path** thành `portainer-image-only.yml`. File này không có `build:`, dùng image vừa tạo trên Docker endpoint đích. Nếu gặp lỗi `pull access denied`, thường là image chưa nằm trên **đúng Docker endpoint**.
+3. Giữ nguyên các biến `LAN_IP`, `OSINT_AUTH_USER`, `OSINT_AUTH_HASH` và host port của Stack. Không dùng image không rõ nguồn trên Docker Hub để chữa lỗi build.
+
 ## 4. Kiểm tra sau khi Deploy (chỉ khi đã chủ động xác nhận)
 
 - Đợi cả container ứng dụng và **gateway** Running, xem **Logs** nếu có lỗi.
