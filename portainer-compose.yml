@@ -1,5 +1,5 @@
 # OpenOSINT; Portainer LAN Stack; fork: https://github.com/hoangthang0106/OpenOSINT
-# Host 18995/tcp is a CANDIDATE only. Confirm on actual VM/LXC before deployment.
+# Dedicated OSINT host range 29001-29099; host port is only a CANDIDATE. Confirm on actual VM/LXC before deployment.
 services:
   openosint:
     build:
@@ -16,8 +16,6 @@ services:
     volumes:
       - openosint_data:/data
       - openosint_reports:/app/reports
-    expose:
-      - "8080"
   gateway:
     image: caddy:2
     restart: unless-stopped
@@ -26,7 +24,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - "${LAN_IP:?ENTER_LAN_IP}:${OPENOSINT_HOST_PORT:-18995}:80/tcp"
+      - "${LAN_IP:?ENTER_LAN_IP}:${OPENOSINT_HOST_PORT:-29002}:80/tcp"
     environment:
       AUTH_USER: "${OSINT_AUTH_USER:?ENTER_USERNAME}"
       AUTH_HASH: "${OSINT_AUTH_HASH:?ENTER_BCRYPT_HASH}"
