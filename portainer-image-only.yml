@@ -1,0 +1,40 @@
+# Use after manually building the tagged image on this Docker host.
+# This file avoids Portainer remote-endpoint build limitations.
+# OpenOSINT; Portainer LAN Stack; fork: https://github.com/hoangthang0106/OpenOSINT
+# Host 18995/tcp is a CANDIDATE only. Confirm on actual VM/LXC before deployment.
+services:
+  openosint:
+    image: local/osint-openosint:portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      OPENOSINT_HOME: "/data"
+      OPENOSINT_PUBLISHED_BIND: "${LAN_IP:?ENTER_LAN_IP}"
+      OPENOSINT_ALLOWED_HOSTS: "${LAN_IP:?ENTER_LAN_IP},localhost,127.0.0.1"
+    volumes:
+      - openosint_data:/data
+      - openosint_reports:/app/reports
+    expose:
+      - "8080"
+  gateway:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - openosint
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "${LAN_IP:?ENTER_LAN_IP}:${OPENOSINT_HOST_PORT:-18995}:80/tcp"
+    environment:
+      AUTH_USER: "${OSINT_AUTH_USER:?ENTER_USERNAME}"
+      AUTH_HASH: "${OSINT_AUTH_HASH:?ENTER_BCRYPT_HASH}"
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        printf '%s\n' ':80 {' '  basic_auth {' "    $$AUTH_USER $$AUTH_HASH" '  }' '  reverse_proxy openosint:8080' '}' > /etc/caddy/Caddyfile
+        caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+volumes:
+  openosint_data:
+  openosint_reports:
